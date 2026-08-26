@@ -4,6 +4,8 @@ Landing interna que centraliza los links a todos los sistemas, dashboards y
 herramientas desarrollados para SEG Ingeniería, para que cualquier empleado
 los encuentre rápido desde un solo lugar.
 
+**Producción:** https://landing-links-seg-production.up.railway.app
+
 ## Stack
 
 - **Next.js 16** (App Router) — JavaScript puro, sin TypeScript.
@@ -118,13 +120,23 @@ datos/proyectos.js     → fuente única de la grilla pública
 
 ## Despliegue en Railway
 
-El proyecto es un Next.js estándar (`next build` / `next start`), Railway
-lo detecta solo vía Nixpacks sin configuración adicional. Antes del primer
-deploy:
+Ya está desplegado: proyecto **landing-links-seg** en Railway, servicio del
+mismo nombre, con `CLAVE_DIRECTIVOS` y `CLAVE_DIRECTIVOS_SECRETO` cargadas
+como variables de entorno del servicio (valores reales, distintos a los de
+`.env.local`). Railway lo detecta y construye solo vía Railpack (`next
+build` / `next start`), sin configuración adicional.
 
-1. Conectar el repo a un proyecto de Railway (desde GitHub, o con
-   `railway up` usando el CLI).
-2. Cargar en las variables de entorno del servicio: `CLAVE_DIRECTIVOS` y
-   `CLAVE_DIRECTIVOS_SECRETO` (valores reales, distintos a los de
-   `.env.local`).
-3. Deploy.
+El servicio se subió directo desde esta carpeta con la CLI (`railway up`),
+no está conectado a un repo de GitHub — así que un `git push` no dispara un
+redeploy solo. Para desplegar un cambio nuevo:
+
+```bash
+railway up --service landing-links-seg
+```
+
+Si en algún momento se quiere pasar a auto-deploy en cada push, se puede
+conectar el repo desde el dashboard de Railway o con:
+
+```bash
+railway service source connect --repo <owner>/<repo> --branch main --service landing-links-seg
+```
