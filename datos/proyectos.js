@@ -46,7 +46,7 @@ export const PROYECTOS = [
   },
   {
     id: "gestion-interna",
-    titulo: "Gestión Interna",
+    titulo: "Gestión de OC",
     descripcion:
       "Órdenes de compra, propuestas de inversión, clientes y proveedores. Próximamente en producción.",
     url: "https://frontend-production-cbe52.up.railway.app",

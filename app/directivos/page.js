@@ -2,10 +2,9 @@ import { cookies } from "next/headers";
 import FormularioClave from "@/components/FormularioClave";
 import IconoCandado from "@/components/iconos/IconoCandado";
 import IconoFlecha from "@/components/iconos/IconoFlecha";
-import { cerrarSesionAccion } from "./acciones";
+import { URL_CMI_DASHBOARD } from "@/datos/enlaces-restringidos";
+import { cerrarSesionAccion, verificarClave } from "./acciones";
 import { NOMBRE_COOKIE_SESION, sesionValida } from "./sesion";
-
-const URL_CMI_DASHBOARD = "https://cmi-dashboard-production.up.railway.app";
 
 export const metadata = {
   title: "Acceso restringido · SEG Ingeniería",
@@ -58,7 +57,7 @@ export default async function PaginaDirectivos({ searchParams }) {
             <p className="mb-8 mt-3 text-sm text-gray-400">
               Esta sección es exclusiva para gerencia general y directores.
             </p>
-            <FormularioClave error={conError} />
+            <FormularioClave accion={verificarClave} error={conError} />
           </>
         )}
       </div>

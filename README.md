@@ -79,10 +79,33 @@ Dashboard** (información sensible de la empresa). Esta ruta:
 - Si la clave es correcta, se crea una **cookie de sesión firmada**
   (HMAC-SHA256, `app/directivos/sesion.js`), `httpOnly`, válida 8 horas, sin
   necesidad de base de datos.
-- El link al CMI Dashboard está hardcodeado en
-  `app/directivos/page.js` (constante `URL_CMI_DASHBOARD`), separado a
-  propósito de `datos/proyectos.js` para que nunca termine apareciendo en
-  la grilla pública por error.
+- El link al CMI Dashboard vive en `datos/enlaces-restringidos.js`
+  (constante `URL_CMI_DASHBOARD`), separado a propósito de
+  `datos/proyectos.js` para que nunca termine apareciendo en la grilla
+  pública por error.
+
+## Etiqueta "Dashboard Gerencial" (`/dashboard-gerencial`)
+
+Además de `/directivos`, hay una segunda puerta de entrada al mismo CMI
+Dashboard, esta vez **visible**: un pill "Dashboard Gerencial" al lado de
+los filtros de categoría en la home (`components/BarraFiltros.js`), pensado
+para que gerencia lo encuentre sin tener que conocer una URL oculta.
+
+Funciona con el mismo esquema que `/directivos` (clave compartida + cookie
+de sesión firmada de 8 horas, sin base de datos), pero con su propia clave
+y su propio secreto (`app/dashboard-gerencial/sesion.js` y
+`acciones.js`). Ambas rutas comparten la URL del CMI Dashboard vía
+`datos/enlaces-restringidos.js`, así que solo hay que actualizarla en un
+lugar.
+
+Al ingresar la clave correcta se muestra una `TarjetaProyecto` (el mismo
+componente de card que usa la grilla pública) con el link al CMI
+Dashboard — es la única `TarjetaProyecto` que existe fuera de
+`datos/proyectos.js`, justamente para que ese proyecto nunca aparezca en
+la grilla pública.
+
+**Importante:** esto deja dos claves distintas abriendo el mismo
+dashboard sensible. Tratarlas con el mismo cuidado.
 
 ### Variables de entorno
 
@@ -92,14 +115,16 @@ variables en Railway para producción:
 | Variable | Para qué sirve |
 |---|---|
 | `CLAVE_DIRECTIVOS` | La clave que van a tipear gerencia/directores para entrar a `/directivos`. |
-| `CLAVE_DIRECTIVOS_SECRETO` | Secreto usado para firmar la cookie de sesión. Generar uno random y no reutilizarlo de otro proyecto, por ejemplo con `openssl rand -hex 32`. |
+| `CLAVE_DIRECTIVOS_SECRETO` | Secreto usado para firmar la cookie de sesión de `/directivos`. Generar uno random y no reutilizarlo de otro proyecto, por ejemplo con `openssl rand -hex 32`. |
+| `CLAVE_DASHBOARD_GERENCIAL` | La clave para entrar a `/dashboard-gerencial` desde la etiqueta de la home. |
+| `CLAVE_DASHBOARD_GERENCIAL_SECRETO` | Secreto usado para firmar la cookie de sesión de `/dashboard-gerencial`. Generar uno distinto al de directivos, por ejemplo con `openssl rand -hex 32`. |
 
-Si falta cualquiera de las dos, la ruta `/directivos` no va a poder
+Si falta alguna de las variables de una ruta, esa ruta no va a poder
 autenticar a nadie (mejor eso a que falle en silencio).
 
-Para cambiar la clave de directivos más adelante, alcanza con actualizar
-`CLAVE_DIRECTIVOS` en las variables de entorno de Railway y volver a
-desplegar — no requiere tocar código.
+Para cambiar cualquiera de las dos claves más adelante, alcanza con
+actualizar la variable correspondiente en Railway y volver a desplegar —
+no requiere tocar código.
 
 ## Estructura del proyecto
 
@@ -112,16 +137,22 @@ app/
     page.js             → formulario de clave o panel, según haya sesión
     acciones.js          → Server Actions: verificar clave / cerrar sesión
     sesion.js             → firma y validación de la cookie de sesión
+  dashboard-gerencial/
+    page.js             → mismo patrón que directivos/, clave propia
+    acciones.js          → Server Actions: verificar clave / cerrar sesión
+    sesion.js             → firma y validación de la cookie de sesión
 components/            → componentes de UI (ver GUIA_ESTILOS.md para los patrones)
 components/iconos/     → íconos SVG inline propios del proyecto
 datos/proyectos.js     → fuente única de la grilla pública
+datos/enlaces-restringidos.js → URLs sensibles que no van en la grilla pública
 .claude/skills/         → skills de Claude Code usadas para el diseño frontend
 ```
 
 ## Despliegue en Railway
 
 Ya está desplegado: proyecto **landing-links-seg** en Railway, servicio del
-mismo nombre, con `CLAVE_DIRECTIVOS` y `CLAVE_DIRECTIVOS_SECRETO` cargadas
+mismo nombre, con `CLAVE_DIRECTIVOS`, `CLAVE_DIRECTIVOS_SECRETO`,
+`CLAVE_DASHBOARD_GERENCIAL` y `CLAVE_DASHBOARD_GERENCIAL_SECRETO` cargadas
 como variables de entorno del servicio (valores reales, distintos a los de
 `.env.local`). Railway lo detecta y construye solo vía Railpack (`next
 build` / `next start`), sin configuración adicional.

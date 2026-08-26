@@ -1,8 +1,6 @@
-import { verificarClave } from "@/app/directivos/acciones";
-
-export default function FormularioClave({ error }) {
+export default function FormularioClave({ accion, error }) {
   return (
-    <form action={verificarClave} className="w-full max-w-sm">
+    <form action={accion} className="w-full max-w-sm">
       <label
         htmlFor="clave"
         className="mb-2 block text-left text-xs font-semibold uppercase tracking-widest text-gray-400"

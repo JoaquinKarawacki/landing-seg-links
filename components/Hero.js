@@ -8,17 +8,7 @@ export default function Hero() {
 
   return (
     <section className="relative overflow-hidden bg-black">
-      <video
-        className="absolute inset-0 h-full w-full object-cover"
-        src="/hero.mp4"
-        autoPlay
-        muted
-        loop
-        playsInline
-        aria-hidden="true"
-      />
-      {/* Sin oscurecer el video: la legibilidad del texto la da la sombra de texto, no un velo. */}
-      <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/50 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-black" />
       <div className="absolute inset-y-0 left-0 w-1 bg-[#ca3517]" />
 
       <div className="relative z-10 mx-auto flex max-w-5xl flex-col items-start px-4 py-28 sm:py-32">

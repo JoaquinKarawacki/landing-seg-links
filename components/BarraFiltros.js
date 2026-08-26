@@ -1,3 +1,5 @@
+import Link from "next/link";
+import IconoCandado from "./iconos/IconoCandado";
 import IconoLupa from "./iconos/IconoLupa";
 
 export default function BarraFiltros({
@@ -33,6 +35,14 @@ export default function BarraFiltros({
               </button>
             );
           })}
+
+          <Link
+            href="/dashboard-gerencial"
+            className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-4 py-1.5 text-sm font-medium text-gray-600 transition-colors duration-200 hover:border-[#ca3517] hover:text-[#ca3517]"
+          >
+            <IconoCandado className="h-3.5 w-3.5" />
+            Dashboard Gerencial
+          </Link>
         </div>
 
         <label className="relative w-full sm:w-64">
