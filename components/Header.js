@@ -4,7 +4,7 @@ import Link from "next/link";
 export default function Header() {
   return (
     <header className="sticky top-0 z-50">
-      <div className="bg-[#ca3517] px-4 py-1.5 text-center font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-white sm:text-xs">
+      <div className="bg-[#ca3517] px-4 py-1.5 text-center text-[11px] font-semibold uppercase tracking-widest text-white sm:text-xs">
         Sistema interno · SEG Ingeniería
       </div>
       <div className="bg-black shadow-md">
@@ -22,7 +22,7 @@ export default function Header() {
               <span className="block text-sm font-bold text-white sm:text-base">
                 Central de Proyectos
               </span>
-              <span className="block font-mono text-[10px] uppercase tracking-widest text-gray-400 sm:text-[11px]">
+              <span className="block text-[11px] font-medium uppercase tracking-widest text-gray-400">
                 SEG Ingeniería
               </span>
             </span>

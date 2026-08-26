@@ -14,7 +14,7 @@ export default function Footer() {
           />
           <div>
             <p className="text-sm font-semibold text-white">SEG Ingeniería</p>
-            <p className="font-mono text-[11px] uppercase tracking-widest text-gray-500">
+            <p className="text-[11px] font-medium uppercase tracking-widest text-gray-500">
               Central de proyectos
             </p>
           </div>

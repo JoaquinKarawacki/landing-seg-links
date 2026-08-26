@@ -27,7 +27,7 @@ export default function BarraFiltros({
                 }`}
               >
                 {categoria}
-                <span className="ml-1.5 font-mono text-xs opacity-70">
+                <span className="ml-1.5 text-xs font-semibold opacity-70">
                   {conteos[categoria] ?? 0}
                 </span>
               </button>

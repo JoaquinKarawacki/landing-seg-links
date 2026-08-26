@@ -22,14 +22,12 @@ export default function TarjetaProyecto({ proyecto }) {
             aria-hidden="true"
             className={`h-1.5 w-1.5 rounded-full ${activo ? "bg-[#ca3517]" : "bg-gray-400"}`}
           />
-          <span className="font-mono text-xs uppercase tracking-widest text-gray-500">
+          <span className="text-xs font-semibold uppercase tracking-widest text-gray-500">
             {activo ? "Activo" : "En desarrollo"}
           </span>
         </div>
 
-        <p className="mt-2 truncate font-mono text-[11px] text-gray-400">
-          {host}
-        </p>
+        <p className="mt-2 truncate text-xs text-gray-400">{host}</p>
 
         <a
           href={proyecto.url}
