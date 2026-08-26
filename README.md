@@ -126,16 +126,11 @@ como variables de entorno del servicio (valores reales, distintos a los de
 `.env.local`). Railway lo detecta y construye solo vía Railpack (`next
 build` / `next start`), sin configuración adicional.
 
-El servicio se subió directo desde esta carpeta con la CLI (`railway up`),
-no está conectado a un repo de GitHub — así que un `git push` no dispara un
-redeploy solo. Para desplegar un cambio nuevo:
-
-```bash
-railway up --service landing-links-seg
-```
-
-Si en algún momento se quiere pasar a auto-deploy en cada push, se puede
-conectar el repo desde el dashboard de Railway o con:
+El servicio está conectado al repo de GitHub
+([`JoaquinKarawacki/landing-seg-links`](https://github.com/JoaquinKarawacki/landing-seg-links),
+rama `main`): cada `git push` a `main` dispara un redeploy automático, no
+hace falta correr nada manualmente. Si en algún momento hay que
+reconectarlo o cambiar de repo/rama:
 
 ```bash
 railway service source connect --repo <owner>/<repo> --branch main --service landing-links-seg
