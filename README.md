@@ -65,6 +65,40 @@ Los estados solo se diferencian por texto + un punto de color (rojo
 "Activo" / gris "En desarrollo"), nunca por colores temáticos — así lo
 exige `GUIA_ESTILOS.md`.
 
+## Cómo sumar un documento nuevo a Documentos (`/documentos`)
+
+Todo el contenido de esta sección sale de **un solo archivo**:
+`datos/documentos.js`, que expone dos cosas:
+
+- `CATEGORIAS_DOCUMENTOS`: qué secciones y categorías existen (hoy
+  `Procedimientos → Administración` y `Marketing → Logos / Templates /
+  Formatos de presentación`). Para sumar una categoría o sección nueva
+  alcanza con editar este objeto — la página se arma sola a partir de él.
+- `DOCUMENTOS`: el listado real de archivos.
+
+Para sumar un documento:
+
+1. Copiar el archivo a `public/documentos/<seccion>/<categoria>/` (por
+   ejemplo `public/documentos/procedimientos/administracion/`).
+2. Agregar un objeto al array `DOCUMENTOS`:
+
+```js
+{
+  id: "slug-unico",
+  titulo: "Nombre del documento",
+  seccion: "Procedimientos",
+  categoria: "Administración",
+  archivo: "/documentos/procedimientos/administracion/archivo.pdf",
+}
+```
+
+No hace falta tocar ningún componente. Una categoría sin documentos todavía
+muestra un mensaje de "Todavía no hay documentos acá" en vez de romper.
+
+**No hay volumen ni storage externo**: los archivos se commitean al repo
+igual que el resto del contenido estático, así que sumar un documento
+requiere un `git push` (dispara el redeploy automático en Railway).
+
 ## Sección oculta para directivos (`/directivos`)
 
 Gerencia general y directores tienen una ruta con el link al **CMI
@@ -133,6 +167,8 @@ app/
   layout.js            → shell HTML, fuente, Header y Footer globales
   page.js              → Home (Hero + grilla de proyectos)
   globals.css          → estilos globales y animaciones
+  documentos/
+    page.js             → sección Documentos (Procedimientos, Marketing, etc.)
   directivos/
     page.js             → formulario de clave o panel, según haya sesión
     acciones.js          → Server Actions: verificar clave / cerrar sesión
@@ -144,7 +180,9 @@ app/
 components/            → componentes de UI (ver GUIA_ESTILOS.md para los patrones)
 components/iconos/     → íconos SVG inline propios del proyecto
 datos/proyectos.js     → fuente única de la grilla pública
+datos/documentos.js    → fuente única de la sección Documentos
 datos/enlaces-restringidos.js → URLs sensibles que no van en la grilla pública
+public/documentos/     → archivos reales de la sección Documentos
 .claude/skills/         → skills de Claude Code usadas para el diseño frontend
 ```
 

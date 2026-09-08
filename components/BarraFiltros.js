@@ -1,6 +1,7 @@
 import Link from "next/link";
 import IconoCandado from "./iconos/IconoCandado";
 import IconoLupa from "./iconos/IconoLupa";
+import IconoProcedimiento from "./iconos/IconoProcedimiento";
 
 export default function BarraFiltros({
   categorias,
@@ -35,6 +36,14 @@ export default function BarraFiltros({
               </button>
             );
           })}
+
+          <Link
+            href="/documentos"
+            className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-4 py-1.5 text-sm font-medium text-gray-600 transition-colors duration-200 hover:border-[#ca3517] hover:text-[#ca3517]"
+          >
+            <IconoProcedimiento className="h-3.5 w-3.5" />
+            Documentos
+          </Link>
 
           <Link
             href="/dashboard-gerencial"
