@@ -65,39 +65,35 @@ Los estados solo se diferencian por texto + un punto de color (rojo
 "Activo" / gris "En desarrollo"), nunca por colores temáticos — así lo
 exige `GUIA_ESTILOS.md`.
 
-## Cómo sumar un documento nuevo a Documentos (`/documentos`)
+## Cómo sumar/eliminar un documento de Documentos (`/documentos`)
 
-Todo el contenido de esta sección sale de **un solo archivo**:
-`datos/documentos.js`, que expone dos cosas:
+Los documentos **ya no se commitean al repo**: se administran desde el panel
+interno `/admin-documentos` (subir/eliminar), protegido por clave. Los
+archivos y su metadata se persisten fuera del repo, en la carpeta que indique
+`RUTA_ALMACENAMIENTO_DOCUMENTOS` (en Railway, el mount path del **Volumen**
+adjunto al servicio; en local, `./almacenamiento/documentos` si esa variable
+no está seteada) — sobreviven a los redeploys sin necesidad de `git push`.
 
-- `CATEGORIAS_DOCUMENTOS`: qué secciones y categorías existen (hoy
-  `Procedimientos → Administración` y `Marketing → Logos / Templates /
-  Formatos de presentación`). Para sumar una categoría o sección nueva
-  alcanza con editar este objeto — la página se arma sola a partir de él.
-- `DOCUMENTOS`: el listado real de archivos.
+Las secciones/categorías sí siguen fijas en código, en
+`datos/documentos.js` (`CATEGORIAS_DOCUMENTOS`: hoy `Procedimientos →
+Administración` y `Marketing → Logos / Templates / Formatos de
+presentación`). Para sumar una categoría o sección nueva alcanza con editar
+ese objeto — el panel y la página pública se arman solos a partir de él. El
+panel solo elige entre las categorías que ya existen ahí.
 
-Para sumar un documento:
+Arquitectura (ver `lib/`):
 
-1. Copiar el archivo a `public/documentos/<seccion>/<categoria>/` (por
-   ejemplo `public/documentos/procedimientos/administracion/`).
-2. Agregar un objeto al array `DOCUMENTOS`:
+- `lib/almacenamientoDocumentos.js`: guarda/borra/lee los bytes en disco.
+- `lib/repositorioDocumentos.js`: índice de metadata (`indice.json`, en la
+  misma carpeta que los archivos) — alta, baja y listado de documentos.
+- `lib/tiposMime.js`: whitelist de extensiones permitidas al subir (pdf,
+  doc/docx, xls/xlsx, ppt/pptx, png/jpg/jpeg/gif, cdr, zip) y su
+  Content-Type/disposición al servirlos.
+- `app/documentos/archivo/[id]/route.js`: sirve los archivos al público.
 
-```js
-{
-  id: "slug-unico",
-  titulo: "Nombre del documento",
-  seccion: "Procedimientos",
-  categoria: "Administración",
-  archivo: "/documentos/procedimientos/administracion/archivo.pdf",
-}
-```
-
-No hace falta tocar ningún componente. Una categoría sin documentos todavía
-muestra un mensaje de "Todavía no hay documentos acá" en vez de romper.
-
-**No hay volumen ni storage externo**: los archivos se commitean al repo
-igual que el resto del contenido estático, así que sumar un documento
-requiere un `git push` (dispara el redeploy automático en Railway).
+Si en algún momento hay que migrar a otro backend de storage (o a una base
+real en vez del índice JSON), solo hay que reescribir esos dos archivos de
+`lib/` — nada de la UI ni de las Server Actions cambia.
 
 ## Sección oculta para directivos (`/directivos`)
 
@@ -141,6 +137,21 @@ la grilla pública.
 **Importante:** esto deja dos claves distintas abriendo el mismo
 dashboard sensible. Tratarlas con el mismo cuidado.
 
+## Panel de administración de Documentos (`/admin-documentos`)
+
+Acceso escondido en un link chico y de bajo contraste al final del Footer
+("Acceso interno"). Mismo esquema que `/directivos` y
+`/dashboard-gerencial` (clave compartida + cookie de sesión firmada
+HMAC-SHA256 de 8 horas, sin base de datos), con su propia clave/secreto
+(`app/admin-documentos/sesion.js`) — a propósito **no** comparte código con
+esas otras dos rutas, para no acoplarlas.
+
+Desde ahí se puede subir un documento nuevo (título + categoría existente +
+archivo) o eliminar uno existente. Las Server Actions
+(`app/admin-documentos/acciones.js`) vuelven a validar la cookie de sesión
+al principio de cada una — no alcanza con que la página esté gateada,
+porque son acciones destructivas sobre archivos reales.
+
 ### Variables de entorno
 
 Copiar `.env.example` a `.env.local` para desarrollo, y cargar las mismas
@@ -152,13 +163,16 @@ variables en Railway para producción:
 | `CLAVE_DIRECTIVOS_SECRETO` | Secreto usado para firmar la cookie de sesión de `/directivos`. Generar uno random y no reutilizarlo de otro proyecto, por ejemplo con `openssl rand -hex 32`. |
 | `CLAVE_DASHBOARD_GERENCIAL` | La clave para entrar a `/dashboard-gerencial` desde la etiqueta de la home. |
 | `CLAVE_DASHBOARD_GERENCIAL_SECRETO` | Secreto usado para firmar la cookie de sesión de `/dashboard-gerencial`. Generar uno distinto al de directivos, por ejemplo con `openssl rand -hex 32`. |
+| `CLAVE_ADMIN_DOCUMENTOS` | La clave para entrar a `/admin-documentos` (subir/eliminar documentos). |
+| `CLAVE_ADMIN_DOCUMENTOS_SECRETO` | Secreto usado para firmar la cookie de sesión de `/admin-documentos`. Generar uno distinto a los de arriba. |
+| `RUTA_ALMACENAMIENTO_DOCUMENTOS` | Carpeta donde se guardan los documentos subidos (archivos + índice de metadata). En Railway, el mount path del **Volumen** persistente del servicio (ej. `/data/documentos`). Si se deja vacía, en local usa `./almacenamiento/documentos` dentro del repo. |
 
 Si falta alguna de las variables de una ruta, esa ruta no va a poder
 autenticar a nadie (mejor eso a que falle en silencio).
 
-Para cambiar cualquiera de las dos claves más adelante, alcanza con
-actualizar la variable correspondiente en Railway y volver a desplegar —
-no requiere tocar código.
+Para cambiar cualquiera de las claves más adelante, alcanza con actualizar
+la variable correspondiente en Railway y volver a desplegar — no requiere
+tocar código.
 
 ## Estructura del proyecto
 
@@ -167,8 +181,6 @@ app/
   layout.js            → shell HTML, fuente, Header y Footer globales
   page.js              → Home (Hero + grilla de proyectos)
   globals.css          → estilos globales y animaciones
-  documentos/
-    page.js             → sección Documentos (Procedimientos, Marketing, etc.)
   directivos/
     page.js             → formulario de clave o panel, según haya sesión
     acciones.js          → Server Actions: verificar clave / cerrar sesión
@@ -177,12 +189,24 @@ app/
     page.js             → mismo patrón que directivos/, clave propia
     acciones.js          → Server Actions: verificar clave / cerrar sesión
     sesion.js             → firma y validación de la cookie de sesión
+  admin-documentos/
+    page.js             → formulario de clave, o panel de alta/baja de documentos
+    acciones.js          → Server Actions: clave, subir documento, eliminar documento
+    sesion.js             → firma y validación de la cookie de sesión (propia, no compartida)
+  documentos/
+    page.js             → sección Documentos (lee lib/repositorioDocumentos.js)
+    archivo/[id]/route.js → sirve los archivos subidos al público
+lib/
+  almacenamientoDocumentos.js → bytes en disco (guardar/eliminar/leer)
+  repositorioDocumentos.js     → metadata de documentos (índice JSON)
+  tiposMime.js                  → extensiones permitidas + Content-Type
 components/            → componentes de UI (ver GUIA_ESTILOS.md para los patrones)
 components/iconos/     → íconos SVG inline propios del proyecto
+components/admin/      → componentes del panel de administración
 datos/proyectos.js     → fuente única de la grilla pública
-datos/documentos.js    → fuente única de la sección Documentos
+datos/documentos.js    → taxonomía de secciones/categorías de Documentos
 datos/enlaces-restringidos.js → URLs sensibles que no van en la grilla pública
-public/documentos/     → archivos reales de la sección Documentos
+scripts/migrar-documentos.mjs → script de un solo uso (migración inicial)
 .claude/skills/         → skills de Claude Code usadas para el diseño frontend
 ```
 
@@ -190,10 +214,19 @@ public/documentos/     → archivos reales de la sección Documentos
 
 Ya está desplegado: proyecto **landing-links-seg** en Railway, servicio del
 mismo nombre, con `CLAVE_DIRECTIVOS`, `CLAVE_DIRECTIVOS_SECRETO`,
-`CLAVE_DASHBOARD_GERENCIAL` y `CLAVE_DASHBOARD_GERENCIAL_SECRETO` cargadas
-como variables de entorno del servicio (valores reales, distintos a los de
-`.env.local`). Railway lo detecta y construye solo vía Railpack (`next
-build` / `next start`), sin configuración adicional.
+`CLAVE_DASHBOARD_GERENCIAL`, `CLAVE_DASHBOARD_GERENCIAL_SECRETO`,
+`CLAVE_ADMIN_DOCUMENTOS`, `CLAVE_ADMIN_DOCUMENTOS_SECRETO` y
+`RUTA_ALMACENAMIENTO_DOCUMENTOS` cargadas como variables de entorno del
+servicio (valores reales, distintos a los de `.env.local`). Railway lo
+detecta y construye solo vía Railpack (`next build` / `next start`), sin
+configuración adicional.
+
+**Volumen para los documentos:** el servicio necesita un **Volumen**
+persistente montado (por ejemplo en `/data`) para que los documentos
+subidos desde `/admin-documentos` sobrevivan a los redeploys —
+`RUTA_ALMACENAMIENTO_DOCUMENTOS` tiene que apuntar dentro de ese mount path
+(ej. `/data/documentos`). Se crea desde el dashboard de Railway, en la
+pestaña del servicio → Volumes.
 
 El servicio está conectado al repo de GitHub
 ([`JoaquinKarawacki/landing-seg-links`](https://github.com/JoaquinKarawacki/landing-seg-links),

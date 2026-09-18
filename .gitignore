@@ -8,6 +8,9 @@
 # producción
 /build
 
+# almacenamiento local de documentos subidos (en Railway viven en el Volumen)
+/almacenamiento
+
 # variables de entorno (nunca commitear valores reales)
 .env
 .env.local

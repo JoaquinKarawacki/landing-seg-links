@@ -5,9 +5,10 @@ export const CATEGORIAS_DOCUMENTOS = {
   Marketing: ["Logos", "Templates", "Formatos de presentación"],
 };
 
-// Documentos reales. Para sumar uno:
-// 1) copiar el archivo a public/documentos/<seccion>/<categoria>/
-// 2) agregar un objeto acá. No hace falta tocar ningún componente.
+// LEGACY: ya no es la fuente de los documentos (eso es lib/repositorioDocumentos.js).
+// Se deja acá únicamente para que scripts/migrar-documentos.mjs pueda migrar
+// estos documentos a producción vía `railway ssh`. Una vez confirmada esa
+// migración, borrar este array + los archivos de public/documentos/.
 export const DOCUMENTOS = [
   // --- Procedimientos / Administración ---
   {

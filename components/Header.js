@@ -8,7 +8,7 @@ export default function Header() {
         Sistema interno · SEG Ingeniería
       </div>
       <div className="bg-black shadow-md">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4">
+        <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4">
           <Link href="/" className="flex items-center gap-3">
             <Image
               src="/logo-seg.png"
@@ -27,15 +27,6 @@ export default function Header() {
               </span>
             </span>
           </Link>
-
-          <nav>
-            <Link
-              href="/documentos"
-              className="text-sm font-medium text-gray-300 transition-colors duration-200 hover:text-white"
-            >
-              Documentos
-            </Link>
-          </nav>
         </div>
       </div>
     </header>

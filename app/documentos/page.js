@@ -1,7 +1,9 @@
+import Hero from "@/components/Hero";
 import IconoMarketing from "@/components/iconos/IconoMarketing";
 import IconoProcedimiento from "@/components/iconos/IconoProcedimiento";
 import TarjetaDocumento from "@/components/TarjetaDocumento";
-import { CATEGORIAS_DOCUMENTOS, DOCUMENTOS } from "@/datos/documentos";
+import { CATEGORIAS_DOCUMENTOS } from "@/datos/documentos";
+import { listarDocumentos } from "@/lib/repositorioDocumentos";
 
 export const metadata = {
   title: "Documentos · SEG Ingeniería",
@@ -14,32 +16,45 @@ const ICONOS_SECCION = {
   Marketing: IconoMarketing,
 };
 
-export default function PaginaDocumentos() {
+export default async function PaginaDocumentos() {
   const secciones = Object.entries(CATEGORIAS_DOCUMENTOS);
+  const documentosPersistidos = await listarDocumentos();
+  const DOCUMENTOS = documentosPersistidos.map((documento) => ({
+    ...documento,
+    archivo: `/documentos/archivo/${documento.id}`,
+  }));
 
   return (
     <>
-      <section className="relative overflow-hidden bg-black px-4 py-20">
-        <div className="absolute inset-y-0 left-0 w-1 bg-[#ca3517]" />
-        <div className="relative z-10 mx-auto max-w-5xl">
-          <h1 className="text-3xl font-bold text-white sm:text-4xl">
-            Documentos
-          </h1>
-          <p className="mt-4 max-w-xl text-gray-300">
-            Procedimientos internos y recursos de referencia de SEG
-            Ingeniería, centralizados por área.
-          </p>
-        </div>
-      </section>
+      <Hero
+        volverHref="/"
+        volverLabel="Volver a Proyectos"
+        titulo={
+          <>
+            Todos los documentos de SEG,
+            <br className="hidden sm:block" /> en un solo lugar.
+          </>
+        }
+        subtitulo="Procedimientos internos y recursos de marketing de SEG Ingeniería, centralizados por área."
+        ctaHref="#documentos"
+        ctaLabel="Ver documentos"
+        estadisticaValor={DOCUMENTOS.length}
+        estadisticaLabel="documentos disponibles"
+        anclaScroll="#documentos"
+        anclaScrollEtiqueta="Ir a la lista de documentos"
+      />
 
       {secciones.map(([seccion, categorias], indiceSeccion) => {
         const Icono = ICONOS_SECCION[seccion];
         return (
           <section
             key={seccion}
-            className={indiceSeccion % 2 === 0 ? "bg-white" : "bg-gray-50"}
+            id={indiceSeccion === 0 ? "documentos" : undefined}
+            className={`scroll-mt-[92px] ${
+              indiceSeccion % 2 === 0 ? "bg-white" : "bg-gray-50"
+            }`}
           >
-            <div className="mx-auto max-w-5xl px-4 py-16">
+            <div className="mx-auto max-w-7xl px-4 py-16">
               <div className="mb-10 flex items-center gap-4">
                 <Icono className="h-8 w-8 text-[#ca3517]" />
                 <div>
