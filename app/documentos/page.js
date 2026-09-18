@@ -5,6 +5,12 @@ import TarjetaDocumento from "@/components/TarjetaDocumento";
 import { CATEGORIAS_DOCUMENTOS } from "@/datos/documentos";
 import { listarDocumentos } from "@/lib/repositorioDocumentos";
 
+// Los documentos viven en un volumen que no existe en build-time: si Next
+// prerenderiza esta página como estática, queda "congelada" en el estado
+// vacío del build hasta la próxima revalidación manual. Forzar dynamic
+// evita eso — siempre lee el estado real del volumen en cada request.
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Documentos · SEG Ingeniería",
   description:
