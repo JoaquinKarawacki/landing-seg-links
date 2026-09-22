@@ -1,5 +1,6 @@
 import Link from "next/link";
 import IconoCandado from "./iconos/IconoCandado";
+import IconoCapitalHumano from "./iconos/IconoCapitalHumano";
 import IconoLupa from "./iconos/IconoLupa";
 import IconoProcedimiento from "./iconos/IconoProcedimiento";
 
@@ -43,6 +44,14 @@ export default function BarraFiltros({
           >
             <IconoProcedimiento className="h-3.5 w-3.5" />
             Documentos
+          </Link>
+
+          <Link
+            href="/capital-humano"
+            className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-4 py-1.5 text-sm font-medium text-gray-600 transition-colors duration-200 hover:border-[#ca3517] hover:text-[#ca3517]"
+          >
+            <IconoCapitalHumano className="h-3.5 w-3.5" />
+            Capital humano
           </Link>
 
           <Link

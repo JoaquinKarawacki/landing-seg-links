@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import FormularioClave from "@/components/FormularioClave";
 import BotonEliminarDocumento from "@/components/admin/BotonEliminarDocumento";
 import IconoCandado from "@/components/iconos/IconoCandado";
-import { CATEGORIAS_DOCUMENTOS } from "@/datos/documentos";
+import { TODAS_LAS_CATEGORIAS } from "@/datos/documentos";
 import { listarDocumentos } from "@/lib/repositorioDocumentos";
 import {
   agregarDocumentoAccion,
@@ -41,7 +41,7 @@ export default async function PaginaAdminDocumentos({ searchParams }) {
   }
 
   const documentos = await listarDocumentos();
-  const secciones = Object.entries(CATEGORIAS_DOCUMENTOS);
+  const secciones = Object.entries(TODAS_LAS_CATEGORIAS);
 
   return (
     <section className="bg-white">

@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { TODAS_LAS_CATEGORIAS } from "@/datos/documentos";
 import { agregarDocumento, eliminarDocumento } from "@/lib/repositorioDocumentos";
 import {
   claveCorrecta,
@@ -54,7 +55,12 @@ export async function agregarDocumentoAccion(formData) {
   const archivo = formData.get("archivo");
   const [seccion, categoria] = seccionCategoria.split("|");
 
-  if (!titulo || !seccion || !categoria || !(archivo instanceof File) || archivo.size === 0) {
+  // La acción se puede invocar directo: no confiar en que el valor venga del select.
+  const categoriaValida =
+    Object.hasOwn(TODAS_LAS_CATEGORIAS, seccion) &&
+    TODAS_LAS_CATEGORIAS[seccion].includes(categoria);
+
+  if (!titulo || !categoriaValida || !(archivo instanceof File) || archivo.size === 0) {
     redirect("/admin-documentos?error=1");
   }
 

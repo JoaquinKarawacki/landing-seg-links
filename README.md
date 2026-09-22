@@ -11,8 +11,10 @@ los encuentre rápido desde un solo lugar.
 - **Next.js 16** (App Router) — JavaScript puro, sin TypeScript.
 - **Tailwind CSS v4**.
 - **React 19**.
-- Sin base de datos ni backend propio: los datos de la grilla pública viven
-  en un archivo del repo (`datos/proyectos.js`).
+- Sin base de datos: la grilla pública vive en un archivo del repo
+  (`datos/proyectos.js`); los documentos (Documentos y Capital humano) se
+  guardan en disco — un Volumen de Railway — con un índice JSON, y se
+  administran desde el panel `/admin-documentos` (Server Actions de Next).
 - Despliegue en **Railway** (no Vercel).
 
 El diseño sigue al pie de la letra `GUIA_ESTILOS.md` (paleta, tipografía,
@@ -28,7 +30,8 @@ npm run dev
 Por defecto levanta en `http://localhost:3000` (si el puerto está ocupado,
 Next elige el siguiente disponible y lo avisa en la consola).
 
-Para probar la sección de directivos en local hace falta un `.env.local`
+Para probar las secciones con clave (directivos, dashboard gerencial y el
+panel de documentos) en local hace falta un `.env.local`
 (ver [Variables de entorno](#variables-de-entorno) más abajo) — no está
 commiteado por seguridad.
 
@@ -67,7 +70,8 @@ exige `GUIA_ESTILOS.md`.
 
 ## Cómo sumar/eliminar un documento de Documentos (`/documentos`)
 
-Los documentos **ya no se commitean al repo**: se administran desde el panel
+Los documentos **no se commitean al repo** (la vieja carpeta
+`public/documentos/` ya se migró al Volumen y se eliminó): se administran desde el panel
 interno `/admin-documentos` (subir/eliminar), protegido por clave. Los
 archivos y su metadata se persisten fuera del repo, en la carpeta que indique
 `RUTA_ALMACENAMIENTO_DOCUMENTOS` (en Railway, el mount path del **Volumen**
@@ -75,11 +79,17 @@ adjunto al servicio; en local, `./almacenamiento/documentos` si esa variable
 no está seteada) — sobreviven a los redeploys sin necesidad de `git push`.
 
 Las secciones/categorías sí siguen fijas en código, en
-`datos/documentos.js` (`CATEGORIAS_DOCUMENTOS`: hoy `Procedimientos →
-Administración` y `Marketing → Logos / Templates / Formatos de
-presentación`). Para sumar una categoría o sección nueva alcanza con editar
-ese objeto — el panel y la página pública se arman solos a partir de él. El
-panel solo elige entre las categorías que ya existen ahí.
+`datos/documentos.js` (`CATEGORIAS_DOCUMENTOS`: hoy `Procedimientos →`
+un sector por categoría (Administración, AE, Consulting, ECR, Heliotec,
+Indicadores, ISO, Renovables, Ventas, SEG eMove) y `Marketing → Logos /
+Templates / Formatos de presentación`). Para sumar una categoría o sección
+nueva alcanza con editar ese objeto — el panel y la página pública se arman
+solos a partir de él. El panel solo acepta categorías que existan ahí (lo
+valida también en el servidor).
+
+Ojo al **renombrar** una categoría que ya tiene archivos: cada documento
+guarda el nombre de su categoría en el índice, así que con el nombre nuevo
+dejan de mostrarse hasta volver a subirlos (o corregir `indice.json`).
 
 Arquitectura (ver `lib/`):
 
@@ -89,11 +99,33 @@ Arquitectura (ver `lib/`):
 - `lib/tiposMime.js`: whitelist de extensiones permitidas al subir (pdf,
   doc/docx, xls/xlsx, ppt/pptx, png/jpg/jpeg/gif, cdr, zip) y su
   Content-Type/disposición al servirlos.
-- `app/documentos/archivo/[id]/route.js`: sirve los archivos al público.
+- `app/documentos/archivo/[id]/route.js`: sirve los archivos al público
+  (PDF e imágenes se abren en el navegador, el resto se descarga). Solo
+  sirve ids que estén en el índice.
 
 Si en algún momento hay que migrar a otro backend de storage (o a una base
 real en vez del índice JSON), solo hay que reescribir esos dos archivos de
 `lib/` — nada de la UI ni de las Server Actions cambia.
+
+## Capital humano (`/capital-humano`)
+
+Segunda sección de documentos, con el mismo formato que `/documentos` y un
+pill propio en la barra de filtros de la home. Agrupa Cédulas de identidad,
+Carnés de salud, Organigrama, Cumpleaños y Emergencias.
+
+Comparte todo con Documentos: el mismo almacenamiento (`indice.json` y el
+Volumen), la misma ruta de descarga (`/documentos/archivo/[id]`) y el mismo
+panel `/admin-documentos`, donde aparece como un grupo más en el selector de
+categoría. Cada página muestra solo las secciones de su propia taxonomía:
+`CATEGORIAS_DOCUMENTOS` y `CATEGORIAS_CAPITAL_HUMANO` en
+`datos/documentos.js` (para sumar o renombrar categorías, se edita ahí). El
+listado en sí vive en `components/ListadoDocumentos.js`, usado por las dos
+páginas.
+
+**Importante:** es pública, igual que `/documentos` (sin clave). Contiene
+datos personales del equipo (CI, carnés de salud, contactos de emergencia),
+así que esos archivos **nunca se commitean al repo**: se suben solo desde el
+panel.
 
 ## Sección oculta para directivos (`/directivos`)
 
@@ -174,6 +206,12 @@ Para cambiar cualquiera de las claves más adelante, alcanza con actualizar
 la variable correspondiente en Railway y volver a desplegar — no requiere
 tocar código.
 
+**Ojo:** cambiar solo la clave (`CLAVE_*`) **no cierra las sesiones ya
+abiertas** — las cookies siguen siendo válidas hasta que vencen (8 horas),
+porque se firman con el secreto, no con la clave. Si la clave se filtró,
+rotar también el `*_SECRETO` correspondiente: eso invalida todas las
+sesiones de esa ruta al instante.
+
 ## Estructura del proyecto
 
 ```
@@ -196,17 +234,19 @@ app/
   documentos/
     page.js             → sección Documentos (lee lib/repositorioDocumentos.js)
     archivo/[id]/route.js → sirve los archivos subidos al público
+  capital-humano/
+    page.js             → sección Capital humano (mismo almacenamiento que Documentos)
 lib/
   almacenamientoDocumentos.js → bytes en disco (guardar/eliminar/leer)
   repositorioDocumentos.js     → metadata de documentos (índice JSON)
   tiposMime.js                  → extensiones permitidas + Content-Type
 components/            → componentes de UI (ver GUIA_ESTILOS.md para los patrones)
+components/ListadoDocumentos.js → listado por sección/categoría (Documentos y Capital humano)
 components/iconos/     → íconos SVG inline propios del proyecto
 components/admin/      → componentes del panel de administración
 datos/proyectos.js     → fuente única de la grilla pública
-datos/documentos.js    → taxonomía de secciones/categorías de Documentos
+datos/documentos.js    → taxonomía de secciones/categorías de Documentos y Capital humano
 datos/enlaces-restringidos.js → URLs sensibles que no van en la grilla pública
-scripts/migrar-documentos.mjs → script de un solo uso (migración inicial)
 .claude/skills/         → skills de Claude Code usadas para el diseño frontend
 ```
 
