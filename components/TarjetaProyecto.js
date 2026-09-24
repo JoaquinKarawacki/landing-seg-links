@@ -1,9 +1,14 @@
+import Link from "next/link";
+import IconoCandado from "./iconos/IconoCandado";
 import IconoCategoria from "./iconos/IconoCategoria";
 import IconoFlecha from "./iconos/IconoFlecha";
 
 export default function TarjetaProyecto({ proyecto }) {
   const activo = proyecto.estado === "activo";
-  const host = new URL(proyecto.url).hostname;
+  // Los proyectos gateados no traen url (vive en enlaces-restringidos.js y se
+  // sirve solo tras clave): linkean a una ruta interna que pide la clave.
+  const gateado = Boolean(proyecto.rutaInterna);
+  const host = proyecto.url ? new URL(proyecto.url).hostname : null;
 
   return (
     <article className="flex h-full flex-col overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
@@ -27,18 +32,35 @@ export default function TarjetaProyecto({ proyecto }) {
           </span>
         </div>
 
-        <p className="mt-2 truncate text-xs text-gray-400">{host}</p>
+        {gateado ? (
+          <p className="mt-2 flex items-center gap-1.5 truncate text-xs text-gray-400">
+            <IconoCandado className="h-3 w-3 flex-shrink-0" />
+            Acceso con clave
+          </p>
+        ) : (
+          <p className="mt-2 truncate text-xs text-gray-400">{host}</p>
+        )}
 
-        <a
-          href={proyecto.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-5 inline-flex items-center justify-center gap-2 rounded-full border-2 border-[#ca3517] px-6 py-2 text-sm font-semibold text-[#ca3517] transition-colors duration-200 hover:bg-[#ca3517] hover:text-white"
-        >
-          Abrir proyecto
-          <span className="sr-only"> (se abre en una pestaña nueva)</span>
-          <IconoFlecha className="h-3.5 w-3.5" />
-        </a>
+        {gateado ? (
+          <Link
+            href={proyecto.rutaInterna}
+            className="mt-5 inline-flex items-center justify-center gap-2 rounded-full border-2 border-[#ca3517] px-6 py-2 text-sm font-semibold text-[#ca3517] transition-colors duration-200 hover:bg-[#ca3517] hover:text-white"
+          >
+            Abrir proyecto
+            <IconoFlecha className="h-3.5 w-3.5" />
+          </Link>
+        ) : (
+          <a
+            href={proyecto.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-5 inline-flex items-center justify-center gap-2 rounded-full border-2 border-[#ca3517] px-6 py-2 text-sm font-semibold text-[#ca3517] transition-colors duration-200 hover:bg-[#ca3517] hover:text-white"
+          >
+            Abrir proyecto
+            <span className="sr-only"> (se abre en una pestaña nueva)</span>
+            <IconoFlecha className="h-3.5 w-3.5" />
+          </a>
+        )}
       </div>
     </article>
   );

@@ -6,7 +6,9 @@ export const PROYECTOS = [
     titulo: "Dashboard de Rodamientos",
     descripcion:
       "Seguimiento del estado de los rodamientos de los parques Peralta y Cerro Grande.",
-    url: "https://rodamientos-dashboard-production.up.railway.app",
+    // Gateado con clave: la URL real vive en datos/enlaces-restringidos.js y se
+    // sirve solo tras autenticar. En vez de url, linkea a la ruta interna.
+    rutaInterna: "/dashboard-rodamientos",
     categoria: "Dashboards",
     estado: "activo",
   },

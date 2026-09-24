@@ -20,11 +20,11 @@ export const CATEGORIAS_DOCUMENTOS = {
 // de administración con Documentos: solo cambia la página que las muestra.
 export const CATEGORIAS_CAPITAL_HUMANO = {
   "Capital humano": [
-    "Cédulas de identidad",
-    "Carnés de salud",
     "Organigrama",
     "Cumpleaños",
-    "Emergencias",
+    "Sociedades médicas",
+    "Cédulas de identidad",
+    "Carnés de salud",
   ],
 };
 

@@ -169,6 +169,31 @@ la grilla pública.
 **Importante:** esto deja dos claves distintas abriendo el mismo
 dashboard sensible. Tratarlas con el mismo cuidado.
 
+## Dashboard de Rodamientos protegido (`/dashboard-rodamientos`)
+
+El **Dashboard de Rodamientos** sigue apareciendo como tarjeta en la sección
+Dashboards de la grilla, pero ya no abre directo: pide una **clave compartida**
+antes de mostrar el link, con el mismo esquema que `/dashboard-gerencial`
+(clave verificada en el servidor con `crypto.timingSafeEqual` + cookie de
+sesión firmada HMAC-SHA256 de 8 horas, sin base de datos), con su propia
+clave/secreto (`app/dashboard-rodamientos/`) — a propósito **no** comparte
+código con las otras rutas gateadas, para no acoplarlas.
+
+- En la grilla, la tarjeta gateada se reconoce porque en vez de url trae
+  `rutaInterna` (en `datos/proyectos.js`): muestra un candado + "Acceso con
+  clave" y su botón lleva a `/dashboard-rodamientos` (misma pestaña), no a la
+  URL externa.
+- La **URL real** del dashboard vive en `datos/enlaces-restringidos.js`
+  (`URL_DASHBOARD_RODAMIENTOS`), **no** en `datos/proyectos.js`: como la data de
+  proyectos se serializa al cliente, dejarla ahí filtraría la URL aunque la
+  tarjeta estuviera gateada.
+- Si la clave es correcta, se muestra una `TarjetaProyecto` con el link real y
+  un "Cerrar sesión". La ruta tiene `robots: noindex`.
+
+Para tratar cualquier dashboard más como gateado, alcanza con darle
+`rutaInterna` en `datos/proyectos.js` (en vez de `url`) y crear su ruta con el
+mismo patrón.
+
 ## Panel de administración de Documentos (`/admin-documentos`)
 
 Acceso escondido en un link chico y de bajo contraste al final del Footer
@@ -195,6 +220,8 @@ variables en Railway para producción:
 | `CLAVE_DIRECTIVOS_SECRETO` | Secreto usado para firmar la cookie de sesión de `/directivos`. Generar uno random y no reutilizarlo de otro proyecto, por ejemplo con `openssl rand -hex 32`. |
 | `CLAVE_DASHBOARD_GERENCIAL` | La clave para entrar a `/dashboard-gerencial` desde la etiqueta de la home. |
 | `CLAVE_DASHBOARD_GERENCIAL_SECRETO` | Secreto usado para firmar la cookie de sesión de `/dashboard-gerencial`. Generar uno distinto al de directivos, por ejemplo con `openssl rand -hex 32`. |
+| `CLAVE_DASHBOARD_RODAMIENTOS` | La clave para entrar a `/dashboard-rodamientos` (Dashboard de Rodamientos, gateado desde la grilla). |
+| `CLAVE_DASHBOARD_RODAMIENTOS_SECRETO` | Secreto usado para firmar la cookie de sesión de `/dashboard-rodamientos`. Generar uno distinto a los de arriba, por ejemplo con `openssl rand -hex 32`. |
 | `CLAVE_ADMIN_DOCUMENTOS` | La clave para entrar a `/admin-documentos` (subir/eliminar documentos). |
 | `CLAVE_ADMIN_DOCUMENTOS_SECRETO` | Secreto usado para firmar la cookie de sesión de `/admin-documentos`. Generar uno distinto a los de arriba. |
 | `RUTA_ALMACENAMIENTO_DOCUMENTOS` | Carpeta donde se guardan los documentos subidos (archivos + índice de metadata). En Railway, el mount path del **Volumen** persistente del servicio (ej. `/data/documentos`). Si se deja vacía, en local usa `./almacenamiento/documentos` dentro del repo. |
