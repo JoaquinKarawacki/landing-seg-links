@@ -110,8 +110,8 @@ real en vez del índice JSON), solo hay que reescribir esos dos archivos de
 ## Capital humano (`/capital-humano`)
 
 Segunda sección de documentos, con el mismo formato que `/documentos` y un
-pill propio en la barra de filtros de la home. Agrupa Cédulas de identidad,
-Carnés de salud, Organigrama, Cumpleaños y Emergencias.
+pill propio en la barra de filtros de la home. La página principal agrupa
+Organigrama, Cumpleaños y Sociedades y emergencias.
 
 Comparte todo con Documentos: el mismo almacenamiento (`indice.json` y el
 Volumen), la misma ruta de descarga (`/documentos/archivo/[id]`) y el mismo
@@ -119,8 +119,18 @@ panel `/admin-documentos`, donde aparece como un grupo más en el selector de
 categoría. Cada página muestra solo las secciones de su propia taxonomía:
 `CATEGORIAS_DOCUMENTOS` y `CATEGORIAS_CAPITAL_HUMANO` en
 `datos/documentos.js` (para sumar o renombrar categorías, se edita ahí). El
-listado en sí vive en `components/ListadoDocumentos.js`, usado por las dos
+listado en sí vive en `components/ListadoDocumentos.js`, usado por todas las
 páginas.
+
+### Documentación personal (`/capital-humano/documentacion-personal`)
+
+Las **Cédulas de identidad** y los **Carnés de salud** (datos personales más
+sensibles) no se muestran en la página principal: viven en una página aparte,
+a la que se llega por un link/título al pie de `/capital-humano`. En el índice
+se guardan igual bajo la sección `Capital humano` (así el panel las sigue
+subiendo en el mismo grupo y no hay que re-subir nada); la página aparte las
+filtra por categoría y las reetiqueta bajo el título "Documentación personal"
+(`CATEGORIAS_DOCUMENTACION_PERSONAL` en `datos/documentos.js`).
 
 **Importante:** es pública, igual que `/documentos` (sin clave). Contiene
 datos personales del equipo (CI, carnés de salud, contactos de emergencia),
@@ -263,6 +273,7 @@ app/
     archivo/[id]/route.js → sirve los archivos subidos al público
   capital-humano/
     page.js             → sección Capital humano (mismo almacenamiento que Documentos)
+    documentacion-personal/page.js → cédulas y carnés de salud, en página aparte con link
 lib/
   almacenamientoDocumentos.js → bytes en disco (guardar/eliminar/leer)
   repositorioDocumentos.js     → metadata de documentos (índice JSON)
