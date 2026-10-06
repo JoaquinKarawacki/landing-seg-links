@@ -4,6 +4,8 @@ import BotonEliminarDocumento from "@/components/admin/BotonEliminarDocumento";
 import IconoCandado from "@/components/iconos/IconoCandado";
 import { TODAS_LAS_CATEGORIAS } from "@/datos/documentos";
 import { listarDocumentos } from "@/lib/repositorioDocumentos";
+import { listarUsuarios } from "@/lib/repositorioUsuarios";
+import PanelUsuarios from "@/components/admin/PanelUsuarios";
 import {
   agregarDocumentoAccion,
   cerrarSesionAccion,
@@ -23,6 +25,8 @@ export default async function PaginaAdminDocumentos({ searchParams }) {
   const parametros = await searchParams;
   const conError = parametros?.error === "1";
   const conExito = parametros?.ok === "1";
+  const conErrorUsuario = parametros?.errorUsuario === "1";
+  const conExitoUsuario = parametros?.okUsuario === "1";
 
   if (!autenticado) {
     return (
@@ -41,6 +45,7 @@ export default async function PaginaAdminDocumentos({ searchParams }) {
   }
 
   const documentos = await listarDocumentos();
+  const usuarios = listarUsuarios();
   const secciones = Object.entries(TODAS_LAS_CATEGORIAS);
 
   return (
@@ -185,6 +190,12 @@ export default async function PaginaAdminDocumentos({ searchParams }) {
             </div>
           ))}
         </div>
+
+        <PanelUsuarios
+          usuarios={usuarios}
+          conExito={conExitoUsuario}
+          conError={conErrorUsuario}
+        />
       </div>
     </section>
   );

@@ -6,6 +6,13 @@ import { revalidatePath } from "next/cache";
 import { TODAS_LAS_CATEGORIAS } from "@/datos/documentos";
 import { agregarDocumento, eliminarDocumento } from "@/lib/repositorioDocumentos";
 import {
+  activarDesactivar,
+  cambiarPassword,
+  crearUsuario,
+  desbloquear,
+  eliminarUsuario,
+} from "@/lib/repositorioUsuarios";
+import {
   claveCorrecta,
   crearValorSesion,
   DURACION_SESION_SEGUNDOS,
@@ -86,4 +93,73 @@ export async function eliminarDocumentoAccion(formData) {
   revalidatePath("/documentos");
   revalidatePath("/admin-documentos");
   redirect("/admin-documentos");
+}
+
+// --- Gestión de usuarios (login de empleados) ---
+// Todas revalidan la sesión de admin: son acciones sensibles sobre cuentas reales.
+
+export async function crearUsuarioAccion(formData) {
+  await requiereSesion();
+
+  const email = formData.get("email")?.toString().trim();
+  const nombre = formData.get("nombre")?.toString().trim();
+  const rol = formData.get("rol")?.toString() === "admin" ? "admin" : "empleado";
+  const password = formData.get("password")?.toString();
+
+  try {
+    crearUsuario({ email, nombre, password, rol });
+  } catch {
+    redirect("/admin-documentos?errorUsuario=1#usuarios");
+  }
+
+  revalidatePath("/admin-documentos");
+  redirect("/admin-documentos?okUsuario=1#usuarios");
+}
+
+export async function activarDesactivarUsuarioAccion(formData) {
+  await requiereSesion();
+
+  const id = formData.get("id")?.toString();
+  const activar = formData.get("activar")?.toString() === "1";
+  if (id) activarDesactivar(id, activar);
+
+  revalidatePath("/admin-documentos");
+  redirect("/admin-documentos#usuarios");
+}
+
+export async function resetearPasswordAccion(formData) {
+  await requiereSesion();
+
+  const id = formData.get("id")?.toString();
+  const password = formData.get("password")?.toString();
+  if (id && password) {
+    try {
+      cambiarPassword(id, password);
+    } catch {
+      redirect("/admin-documentos?errorUsuario=1#usuarios");
+    }
+  }
+
+  revalidatePath("/admin-documentos");
+  redirect("/admin-documentos?okUsuario=1#usuarios");
+}
+
+export async function desbloquearUsuarioAccion(formData) {
+  await requiereSesion();
+
+  const id = formData.get("id")?.toString();
+  if (id) desbloquear(id);
+
+  revalidatePath("/admin-documentos");
+  redirect("/admin-documentos#usuarios");
+}
+
+export async function eliminarUsuarioAccion(formData) {
+  await requiereSesion();
+
+  const id = formData.get("id")?.toString();
+  if (id) eliminarUsuario(id);
+
+  revalidatePath("/admin-documentos");
+  redirect("/admin-documentos#usuarios");
 }

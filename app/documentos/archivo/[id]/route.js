@@ -1,6 +1,7 @@
 import { abrirFlujoLectura } from "@/lib/almacenamientoDocumentos";
 import { obtenerDocumentoPorId } from "@/lib/repositorioDocumentos";
 import { extensionDeNombre, infoTipoMime } from "@/lib/tiposMime";
+import { getUsuarioActual } from "@/lib/dal";
 
 // Los headers HTTP solo aceptan Latin-1: un nombre con "—", comillas
 // tipográficas o emojis tira ERR_INVALID_CHAR (500). Se manda un nombre ASCII
@@ -22,6 +23,13 @@ function contentDisposition(disposicion, nombreOriginal) {
 }
 
 export async function GET(_request, { params }) {
+  // Defensa en profundidad: además del proxy, el route handler confirma que haya
+  // un empleado autenticado y activo antes de servir cualquier archivo.
+  const usuario = await getUsuarioActual();
+  if (!usuario) {
+    return new Response("No autorizado", { status: 401 });
+  }
+
   const { id } = await params;
   const documento = await obtenerDocumentoPorId(id);
 

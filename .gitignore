@@ -11,6 +11,16 @@
 # almacenamiento local de documentos subidos (en Railway viven en el Volumen)
 /almacenamiento
 
+# base de datos SQLite de usuarios (local; en Railway vive en el Volumen).
+# Nunca commitear: contiene datos de usuarios y hashes de contraseñas.
+*.db
+*.db-wal
+*.db-shm
+
+# datos personales de empleados (fuentes para sembrar usuarios). Nunca commitear.
+usuarios*.csv
+*.xlsx
+
 # variables de entorno (nunca commitear valores reales)
 .env
 .env.local

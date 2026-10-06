@@ -11,10 +11,13 @@ los encuentre rápido desde un solo lugar.
 - **Next.js 16** (App Router) — JavaScript puro, sin TypeScript.
 - **Tailwind CSS v4**.
 - **React 19**.
-- Sin base de datos: la grilla pública vive en un archivo del repo
-  (`datos/proyectos.js`); los documentos (Documentos y Capital humano) se
-  guardan en disco — un Volumen de Railway — con un índice JSON, y se
-  administran desde el panel `/admin-documentos` (Server Actions de Next).
+- La grilla pública vive en un archivo del repo (`datos/proyectos.js`); los
+  documentos (Documentos y Capital humano) se guardan en disco — un Volumen de
+  Railway — con un índice JSON, y se administran desde el panel
+  `/admin-documentos` (Server Actions de Next).
+- **Login de empleados**: cuentas (email + contraseña hasheada) en una base
+  **SQLite** que vive en el mismo Volumen (`usuarios.db`, sin servidor de BD
+  aparte, vía `node:sqlite`). Ver [Login de empleados](#login-de-empleados-acceso-a-todo-el-sitio).
 - Despliegue en **Railway** (no Vercel).
 
 El diseño sigue al pie de la letra `GUIA_ESTILOS.md` (paleta, tipografía,
@@ -39,6 +42,54 @@ commiteado por seguridad.
 npm run build   # build de producción, útil para chequear que no rompió nada
 npm run lint     # ESLint
 ```
+
+## Login de empleados (acceso a todo el sitio)
+
+Todo el sitio está detrás de un login: lo primero que se ve al entrar es
+`/login`, y sin sesión no se accede a nada (ni la grilla, ni documentos, ni las
+descargas de archivos). Es de uso exclusivo de los empleados de SEG.
+
+**Cómo funciona:**
+
+- Cada empleado tiene una cuenta (email + contraseña). Las contraseñas se guardan
+  **hasheadas con scrypt** (`node:crypto`), nunca en texto plano.
+- Los usuarios viven en una base **SQLite** (`usuarios.db`) dentro del Volumen de
+  Railway, al lado del `indice.json` de documentos. No hay servidor de BD aparte:
+  se usa el `node:sqlite` nativo (requiere Node ≥ 22.5; el proyecto fija
+  `engines.node` en `package.json`). El esquema está en `lib/esquema.sql`.
+- La sesión es una **cookie firmada HMAC-SHA256** (8 h), igual que las rutas con
+  clave. El gateo de todo el sitio lo hace `proxy.js` (el middleware de Next 16),
+  con verificación "segura" contra la BD en `lib/dal.js`.
+- **Rate limit**: 5 intentos fallidos bloquean la cuenta 15 minutos.
+- Las 4 rutas con clave compartida (directivos, dashboard gerencial, rodamientos,
+  admin-documentos) **siguen funcionando igual, por encima** del login.
+
+**Capas (`lib/`):**
+
+- `lib/baseDatos.js`: orquestador de la BD (decide motor y ruta; hoy SQLite en el
+  Volumen). Migrar a Postgres sería reescribir solo este archivo y el repositorio.
+- `lib/repositorioUsuarios.js`: CRUD de usuarios, hashing scrypt y rate limit.
+- `lib/sesionEmpleado.js`: firma/valida la cookie de sesión.
+- `lib/dal.js`: `verifySession()` / `getUsuarioActual()` (verificación contra BD).
+
+**Administrar usuarios:** desde el panel `/admin-documentos` (sección *Usuarios*),
+con la misma clave de admin. Permite crear, activar/desactivar, resetear
+contraseña, desbloquear y eliminar.
+
+**Carga inicial de usuarios (script):**
+
+El `usuarios.csv` se genera desde la fuente de verdad (la BD del sistema de
+Licencias) y **no se commitea** (datos personales; está en `.gitignore`). Para
+sembrar la base del login con una contraseña compartida temporal:
+
+```bash
+node scripts/cargar-usuarios.js usuarios.csv "<contraseña-compartida>"
+# CSV con encabezado: email,nombre,rol
+```
+
+Es idempotente (upsert por email). En **local** escribe en
+`./almacenamiento/usuarios.db`. En **producción** el Volumen vive dentro del
+contenedor: correr el script ahí (`railway ssh`) o dar de alta desde el panel.
 
 ## Cómo sumar un proyecto nuevo a la grilla pública
 
@@ -235,6 +286,8 @@ variables en Railway para producción:
 | `CLAVE_ADMIN_DOCUMENTOS` | La clave para entrar a `/admin-documentos` (subir/eliminar documentos). |
 | `CLAVE_ADMIN_DOCUMENTOS_SECRETO` | Secreto usado para firmar la cookie de sesión de `/admin-documentos`. Generar uno distinto a los de arriba. |
 | `RUTA_ALMACENAMIENTO_DOCUMENTOS` | Carpeta donde se guardan los documentos subidos (archivos + índice de metadata). En Railway, el mount path del **Volumen** persistente del servicio (ej. `/data/documentos`). Si se deja vacía, en local usa `./almacenamiento/documentos` dentro del repo. |
+| `SESION_EMPLEADOS_SECRETO` | Secreto para firmar la cookie de sesión del login de empleados (HMAC-SHA256). Generar uno random, distinto a los demás, ej. `openssl rand -hex 32`. |
+| `RUTA_BASE_DATOS` | Archivo SQLite con los usuarios del login. En Railway, dentro del **Volumen** (ej. `/data/usuarios.db`). Si se deja vacía, en local usa `./almacenamiento/usuarios.db`. |
 
 Si falta alguna de las variables de una ruta, esa ruta no va a poder
 autenticar a nadie (mejor eso a que falle en silencio).
