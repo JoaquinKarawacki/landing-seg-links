@@ -14,6 +14,9 @@ export const CATEGORIAS_DOCUMENTOS = {
     "SEG eMove",
   ],
   Marketing: ["Logos", "Templates", "Formatos de presentación"],
+  // Skills de IA (SKILL.md / bundles .zip) de uso común en la empresa.
+  // Un único bucket plano, sin subcategorías.
+  Skills: ["Skills"],
 };
 
 // Config de Capital humano (/capital-humano). Comparte almacenamiento y panel

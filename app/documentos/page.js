@@ -1,4 +1,5 @@
 import Hero from "@/components/Hero";
+import IconoHerramienta from "@/components/iconos/IconoHerramienta";
 import IconoMarketing from "@/components/iconos/IconoMarketing";
 import IconoProcedimiento from "@/components/iconos/IconoProcedimiento";
 import ListadoDocumentos from "@/components/ListadoDocumentos";
@@ -20,6 +21,7 @@ export const metadata = {
 const ICONOS_SECCION = {
   Procedimientos: IconoProcedimiento,
   Marketing: IconoMarketing,
+  Skills: IconoHerramienta,
 };
 
 export default async function PaginaDocumentos() {
