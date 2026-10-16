@@ -73,4 +73,13 @@ export const PROYECTOS = [
     categoria: "Herramientas",
     estado: "activo",
   },
+  {
+    id: "generador-codigos",
+    titulo: "Generador de Códigos",
+    descripcion:
+      "Genera códigos de procesos comerciales de forma automática y correlativa a partir de una Oportunidad Comercial (OPC).",
+    url: "https://generador-codigos-production.up.railway.app",
+    categoria: "Herramientas",
+    estado: "activo",
+  },
 ];
